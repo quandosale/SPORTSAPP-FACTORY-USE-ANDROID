@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    xmlns:custom="http://schemas.android.com/apk/res/com.ecgproduct"
+    tools:context="com.ecgproduct.MainActivity"
+    tools:showIn="@layout/activity_main">
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/mainback">
+        <Button
+            android:id="@+id/btn_scan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="Scan"
+            android:textSize="18dp"
+            android:textColor="#fff"
+            android:background="@drawable/radiusbutton"
+            android:textAllCaps="false"
+            android:textStyle="normal" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_below="@+id/btn_scan"
+            android:layout_above="@+id/btn_bottom"
+            android:weightSum="12">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:background="@drawable/editround"
+                android:layout_weight="3"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                >
+                <ListView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="3"
+                    android:padding="10dip"
+                    android:nestedScrollingEnabled="true"
+                    android:divider="#777"
+                    android:dividerHeight="1px"
+                    android:id="@+id/device_list"></ListView>
+            </LinearLayout>
+
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:id="@+id/lyt_chart"
+                android:layout_height="0dp"
+                android:layout_weight="6"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/editround"
+                android:padding="5dp"
+                android:orientation="vertical">
+                <com.ecgproduct.ECGChart
+                    android:background="#333"
+                    android:id="@+id/ecg_flow_chart"
+                    android:layout_height="match_parent"
+                    android:layout_width="match_parent"
+                    custom:graphMode="1"
+                    custom:lineColor="#00ff00"
+                    custom:arrow="true"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <RadioGroup
+                        android:id="@+id/rd_group"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:alpha="0.5">
+
+                        <RadioButton
+                            android:id="@+id/rd_first"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:buttonTint="@color/your_color"
+                            android:text="Sweep Mode"
+                            android:onClick="graphModeFirst"
+                            android:textColor="@color/your_color" />
+
+                        <RadioButton
+                            android:id="@+id/rd_second"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:buttonTint="@color/your_color"
+                            android:onClick="graphModeSecond"
+                            android:text="Flow Mode"
+                            android:textColor="@color/your_color" />
+                    </RadioGroup>
+                </LinearLayout>
+            </FrameLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:orientation="vertical"
+                android:layout_weight="3"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/editround"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
+                android:nestedScrollingEnabled="true"
+                android:id="@+id/listdevforpt2">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_weight="10">
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_weight="6">
+                        <TextView
+                            android:id="@+id/tx_connect"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="20dp"
+                            android:textColor="#bbb"
+                            android:text="Not Connected"/>
+                        <TextView
+                            android:id="@+id/tx_mac"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="#bbb"
+                            android:text="MAC: AA:BB:CC"/>
+                        <TextView
+                            android:id="@+id/tx_temp"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="#bbb"
+                            android:text="Temperature: 24C"/>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_weight="4">
+                        <TextView
+                            android:id="@+id/tx_touched"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="20dp"
+                            android:textColor="#bbb"
+                            android:text="Sensor Off"/>
+                        <TextView
+                            android:id="@+id/tx_battery"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="#bbb"
+                            android:text="Battery: 77%"/>
+                        <TextView
+                            android:id="@+id/tx_rssi"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="#bbb"
+                            android:text="RSSI: -50DB"/>
+                    </LinearLayout>
+                </LinearLayout>
+                <TextView
+                    android:id="@+id/tx_accelerate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#bbb"
+                    android:text="Acceleration X:220 Y:300 Z: 400"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btn_bottom"
+            android:layout_alignParentBottom="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:weightSum="2"
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/btn_pass"
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:text="PASS"
+                android:textSize="18dp"
+                android:textColor="#fff"
+                android:background="@drawable/radiusbuttongreen"
+                android:textAllCaps="false"
+                android:textStyle="normal" />
+
+            <Button
+                android:id="@+id/btn_fail"
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:text="FAIL"
+                android:textSize="18dp"
+                android:textColor="#fff"
+                android:background="@drawable/radiusbuttonred"
+                android:textAllCaps="false"
+                android:textStyle="normal" />
+        </LinearLayout>
+    </RelativeLayout>
+
+
+</android.support.constraint.ConstraintLayout>
