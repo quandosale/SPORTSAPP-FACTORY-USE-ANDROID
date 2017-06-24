@@ -41,6 +41,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioGroup;
@@ -83,11 +84,19 @@ public class MainActivity extends AppCompatActivity
 	TextView tx_connect, tx_mac, tx_temper, tx_battery, tx_rssi, tx_acct, tx_sensor;
 	Button btn_pass, btn_fail;
 	private ECGChart mECGFlowChart;
+
 	private LinearLayout lyt_graph;
+	private LinearLayout lyt_list;
+	private LinearLayout lyt_info;
+	private LinearLayout lyt_bottom;
+	private FrameLayout lyt_chart;
+	private FloatingActionButton fab;
+
 
 	int currentPos = -1;
 	Bledevices currentBle;
 	String filename = "CALM_Report.csv";
+	String filedirectory = "Report";
 	boolean isSensorDetected = false;
 	int isECG = -1;
 	float accX = 0;
@@ -144,15 +153,7 @@ public class MainActivity extends AppCompatActivity
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 
-		FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-		fab.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				Snackbar.make(view, "Will Send Current Result.", Snackbar.LENGTH_LONG)
-						.setAction("Action", null).show();
-				sendResult();
-			}
-		});
+
 		currentBle = null;
 		initViews();
 		_checkPermission();
@@ -279,7 +280,7 @@ public class MainActivity extends AppCompatActivity
 	public void sendResult(){
 
 //		String destLocationBackup = getApplicationContext().getFilesDir().getAbsolutePath() + "/" + "CALM_Backup.csv";
-		String destLocationReal = Environment.getExternalStorageDirectory() + "/" + "Report" + "/" + filename;
+		String destLocationReal = Environment.getExternalStorageDirectory() + "/" + filedirectory + "/" + filename;
 //		File file = new File(destLocation1);
 //		if(file.exists()){
 //			Log.i("aaa","aaa");
@@ -307,16 +308,52 @@ public class MainActivity extends AppCompatActivity
 		deviceList.setOnItemClickListener(this);
 		deviceList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
+		lyt_bottom = (LinearLayout) findViewById(R.id.lyt_bottom);
+		lyt_list = (LinearLayout) findViewById(R.id.lyt_list);
+		lyt_info = (LinearLayout) findViewById(R.id.lyt_info);
+		lyt_chart = (FrameLayout) findViewById(R.id.lyt_chart);
+
+		fab = (FloatingActionButton) findViewById(R.id.fab);
+		fab.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				Snackbar.make(view, "Will Send Current Result.", Snackbar.LENGTH_LONG)
+						.setAction("Action", null).show();
+				sendResult();
+			}
+		});
+
 		lyt_graph = (LinearLayout) findViewById(R.id.lyt_graph);
 		lyt_graph.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				// Code here executes on main thread after user presses button
 				if (doubleGraphClick) {
-					isFitMode = !isFlowMode;
-					if(isFlowMode)
+					isFitMode = !isFitMode;
+					if(isFitMode) {
+						lyt_bottom.setVisibility(View.GONE);
+						lyt_list.setVisibility(View.GONE);
+						lyt_info.setVisibility(View.GONE);
+						btnScan.setVisibility(View.GONE);
+						fab.setVisibility(View.GONE);
+						getSupportActionBar().hide();
+						lyt_chart.setLayoutParams(new LinearLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, 0,12f));
 						setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+					}
 					else
+					{
+						lyt_bottom.setVisibility(View.VISIBLE);
+						lyt_list.setVisibility(View.VISIBLE);
+						lyt_info.setVisibility(View.VISIBLE);
+						btnScan.setVisibility(View.VISIBLE);
+						fab.setVisibility(View.VISIBLE);
+						getSupportActionBar().show();
+						LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+								LinearLayout.LayoutParams.MATCH_PARENT, 0,6f);
+						int inPixels= (int) MainActivity.this.getResources().getDimension(R.dimen.maring_dp);
+						params.setMargins(inPixels,inPixels,inPixels,inPixels);
+						lyt_chart.setLayoutParams(params);
 						setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+					}
 					Log.i("Click","Double");
 				}
 				doubleGraphClick = true;
@@ -520,7 +557,7 @@ public class MainActivity extends AppCompatActivity
 					e.printStackTrace();
 				}
 
-				final File root = new File(Environment.getExternalStorageDirectory(), "Report");
+				final File root = new File(Environment.getExternalStorageDirectory(), filedirectory);
 				boolean success = false;
 				//Create Folder
 				if (!root.exists()) {
@@ -734,10 +771,9 @@ public class MainActivity extends AppCompatActivity
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
-
 		// Checks the orientation of the screen for landscape and portrait and set portrait mode always
 		if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-			setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+			setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 		} else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
 			setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 		}
@@ -966,7 +1002,6 @@ public class MainActivity extends AppCompatActivity
 		private ArrayList<Bledevices> mLeDevices;
 		private LayoutInflater mInflator;
 		boolean mCheckStates[];
-//		CheckBox checkBox;
 
 		LeDeviceListAdapter() {
 			super();
@@ -976,7 +1011,6 @@ public class MainActivity extends AppCompatActivity
 		}
 
 		void addDevice(Bledevices dev) {
-
 			if((dev.device.getName()!=null) && (dev.device.getName().contains("CALM"))) {
 				int i;
 				int listSize = mLeDevices.size();
@@ -1023,7 +1057,6 @@ public class MainActivity extends AppCompatActivity
 			} else {
 				viewHolder = (ViewHolder) view.getTag();
 			}
-
 			Bledevices bleDevice = mLeDevices.get(i);
 			final String deviceName = bleDevice.device.getName();
 			if (deviceName != null && deviceName.length() > 0) {
@@ -1034,11 +1067,9 @@ public class MainActivity extends AppCompatActivity
 			return view;
 		}
 	}
-
 	private static class ViewHolder {
 		TextView deviceName;
 	}
-
 	private class Bledevices {
 		BluetoothDevice device;
 		int signal = 0;
