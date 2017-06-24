@@ -2,6 +2,7 @@ package com.ecgproduct;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -12,8 +13,11 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -37,6 +41,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
@@ -78,18 +83,20 @@ public class MainActivity extends AppCompatActivity
 	TextView tx_connect, tx_mac, tx_temper, tx_battery, tx_rssi, tx_acct, tx_sensor;
 	Button btn_pass, btn_fail;
 	private ECGChart mECGFlowChart;
+	private LinearLayout lyt_graph;
 
 	int currentPos = -1;
 	Bledevices currentBle;
 	String filename = "CALM_Report.csv";
 	boolean isSensorDetected = false;
 	int isECG = -1;
-	int accX = 0;
-	int accY = 0;
-	int accZ = 0;
+	float accX = 0;
+	float accY = 0;
+	float accZ = 0;
 	int batteryAmount = 0;
 	boolean isFlowMode = false;
 	int nPercent = -1;
+	boolean isFitMode = false;
 
 	private LeDeviceListAdapter mLeDeviceListAdapter;
 
@@ -249,7 +256,7 @@ public class MainActivity extends AppCompatActivity
 
 		//noinspection SimplifiableIfStatement
 		if (id == R.id.send_action) {
-			Snackbar.make(this.findViewById(android.R.id.content).getRootView(), "Will Send Result to Steven.", Snackbar.LENGTH_LONG)
+			Snackbar.make(this.findViewById(android.R.id.content).getRootView(), "Will Send Current Result.", Snackbar.LENGTH_LONG)
 					.setAction("Action", null).show();
 			sendResult();
 		}
@@ -292,13 +299,36 @@ public class MainActivity extends AppCompatActivity
 		emailIntent .putExtra(Intent.EXTRA_SUBJECT, "Subject");
 		startActivity(Intent.createChooser(emailIntent , "Send email..."));
 	}
-
+	boolean doubleGraphClick = false;
 	private void initViews() {
 		deviceList = (ListView) findViewById(R.id.device_list);
 		mLeDeviceListAdapter = new LeDeviceListAdapter();
 		deviceList.setAdapter(mLeDeviceListAdapter);
 		deviceList.setOnItemClickListener(this);
 		deviceList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+
+		lyt_graph = (LinearLayout) findViewById(R.id.lyt_graph);
+		lyt_graph.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				// Code here executes on main thread after user presses button
+				if (doubleGraphClick) {
+					isFitMode = !isFlowMode;
+					if(isFlowMode)
+						setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+					else
+						setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+					Log.i("Click","Double");
+				}
+				doubleGraphClick = true;
+				new Handler().postDelayed(new Runnable() {
+
+					@Override
+					public void run() {
+						doubleGraphClick=false;
+					}
+				}, 1000);
+			}
+		});
 
 		RadioGroup radioGroup;
 		radioGroup = (RadioGroup) findViewById(R.id.rd_group);
@@ -328,7 +358,7 @@ public class MainActivity extends AppCompatActivity
 			public void onClick(View v) {
 				// Code here executes on main thread after user presses button
 				if(currentBle !=null)
-					productOperate(true);
+					confirmOperate(true);
 			}
 		});
 
@@ -336,7 +366,7 @@ public class MainActivity extends AppCompatActivity
 		btn_fail.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				if(currentBle !=null)
-					productOperate(false);
+					confirmOperate(false);
 				// Code here executes on main thread after user presses button
 			}
 		});
@@ -383,10 +413,9 @@ public class MainActivity extends AppCompatActivity
 							}
 //							tx_battery.setText("Battery: " + batteryAmount + " %");
 							Log.i("battery",""+batteryAmount);
+                            tx_mac.setText("MAC: "+currentBle.device.getAddress());
+                            tx_rssi.setText("RSSI: " + currentBle.signal + " dB");
 							calcBattery();
-							tx_acct.setText("Acceleration: X:" + accX + " Y:" + accY + " Z:" + accZ);
-							tx_mac.setText("MAC: "+currentBle.device.getAddress());
-							tx_rssi.setText("RSSI: " + currentBle.signal + " dB");
 						}
 					}
 				});
@@ -394,6 +423,33 @@ public class MainActivity extends AppCompatActivity
 		};
 		Timer timer = new Timer();
 		timer.schedule(drawEmitter, 0, 100);
+	}
+	public void confirmOperate(final boolean isPass){
+		final Dialog dpolling = new Dialog(MainActivity.this);
+		dpolling.setContentView(R.layout.confirmdlg);
+		dpolling.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+		TextView tv = (TextView) dpolling.findViewById(R.id.addtext);
+		if(isPass)
+			tv.setText("This Device is Passed?\nAre you sure?");
+		else
+			tv.setText("This Device is Failed?\nAre you sure?");
+		Button btnYes = (Button) dpolling.findViewById(R.id.btn_yes);
+		Button btnNo = (Button) dpolling.findViewById(R.id.btn_no);
+		btnYes.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				productOperate(isPass);
+				dpolling.dismiss();
+
+			}
+		});
+		btnNo.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				dpolling.dismiss(); // dismiss the dialog
+			}
+		});
+		dpolling.show();
 	}
 	public void calcBattery(){
 		double fvolt = (double)batteryAmount /4095 * 0.6 *114 / 14;
@@ -405,6 +461,23 @@ public class MainActivity extends AppCompatActivity
 			tx_battery.setText("Battery: " + fpercent + " %");
 			nPercent = fpercent;
 		}
+		if(accX > 2048)
+		    accX = 2048 - accX;
+        accX = (float)((double)accX/2048 * 2);
+		String strX = String.format("%.03f", accX );
+
+        if(accY > 2048)
+            accY = 2048 - accY;
+        accY = (float)((double)accY/2048 * 2);
+		String strY = String.format("%.03f", accX );
+
+        if(accZ > 2048)
+			accZ = 2048 - accZ;
+		accZ = (float) ((double)accZ/2048 * 2);
+		String strXZ = String.format("%.03f", accX );
+
+        tx_acct.setText("Acceleration: X:" + strX + " g Y:" + strY + "g Z:" + strXZ +"g");
+
 	}
 	public void productOperate(final boolean ispass){
 		File file;
@@ -463,6 +536,7 @@ public class MainActivity extends AppCompatActivity
 						freal.createNewFile();
 					} catch (IOException e) {
 						e.printStackTrace();
+						Toast.makeText(MainActivity.this, "Recorded Failed!", Toast.LENGTH_SHORT).show();
 					}
 				}
 				if(!ftemp.exists())
@@ -471,6 +545,7 @@ public class MainActivity extends AppCompatActivity
 						ftemp.createNewFile();
 					} catch (IOException e) {
 						e.printStackTrace();
+						Toast.makeText(MainActivity.this, "Recorded Failed!", Toast.LENGTH_SHORT).show();
 					}
 				}
 				//Real Data
@@ -481,49 +556,94 @@ public class MainActivity extends AppCompatActivity
 					bufferTemp = new BufferedWriter(new FileWriter(ftemp));
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
+					Toast.makeText(MainActivity.this, "Recorded Failed!", Toast.LENGTH_SHORT).show();
 				} catch (IOException e) {
 					e.printStackTrace();
+					Toast.makeText(MainActivity.this, "Recorded Failed!", Toast.LENGTH_SHORT).show();
 				}
 
 				String currentLine;
 				boolean isExist = false;
-				int nCount = 1;
+				int nCount = 0;
 				int nSuccessedCount = 0;
 				try {
 					while((currentLine = bufferReal.readLine()) != null) {
                         // trim newline when comparing with lineToRemove
                         String trimmedLine = currentLine.trim();
-						nCount ++;
 						if (trimmedLine.contains(currentBle.device.getAddress()))
 						{
 							isExist = true;
-							if(ispass){
-								if(trimmedLine.contains("Fail")){
-									trimmedLine = trimmedLine.replace("Fail","Pass");
-								}
-							}
-							else{
-								if(trimmedLine.contains("Pass")){
-									trimmedLine = trimmedLine.replace("Pass","Fail");
-								}
-							}
+							if(accX > 2048)
+								accX = 2048 - accX;
+							accX = (float)((double)accX/2048 * 2);
+							String strX = String.format("%.03f", accX );
+
+							if(accY > 2048)
+								accY = 2048 - accY;
+							accY = (float)((double)accY/2048 * 2);
+							String strY = String.format("%.03f", accX );
+
+							if(accZ > 2048)
+								accZ = 2048 - accZ;
+							accZ = (float) ((double)accZ/2048 * 2);
+							String strXZ = String.format("%.03f", accX );
+
+							if(ispass)
+								bufferTemp.write(nCount + ","+currentBle.device.getAddress() +",Pass,"+
+										nPercent + "," + strX + "," + strY + "," + strXZ+
+										System.getProperty("line.separator"));
+							else
+								bufferTemp.write(nCount + ","+currentBle.device.getAddress() +",Fail,"+
+										nPercent + "," + strX + "," + strY + "," + strXZ+
+										System.getProperty("line.separator"));
 						}
+						else
+							bufferTemp.write(trimmedLine + System.getProperty("line.separator"));
 						if(trimmedLine.contains("Pass")){
 							nSuccessedCount ++;
 						}
-						bufferTemp.write(trimmedLine + System.getProperty("line.separator"));
+						nCount ++;
+
+
                     }
 				} catch (IOException e) {
 					e.printStackTrace();
+					Toast.makeText(MainActivity.this, "Recorded Failed!", Toast.LENGTH_SHORT).show();
 				}
 				if(!isExist){
 					try {
+						if(nCount == 0)
+						{
+							bufferTemp.write("Serial,MAC Address,Status,Battery,X,Y,Z" +
+									System.getProperty("line.separator"));
+							nCount++;
+						}
+						if(accX > 2048)
+							accX = 2048 - accX;
+						accX = (float)((double)accX/2048 * 2);
+						String strX = String.format("%.03f", accX );
+
+						if(accY > 2048)
+							accY = 2048 - accY;
+						accY = (float)((double)accY/2048 * 2);
+						String strY = String.format("%.03f", accX );
+
+						if(accZ > 2048)
+							accZ = 2048 - accZ;
+						accZ = (float) ((double)accZ/2048 * 2);
+						String strXZ = String.format("%.03f", accX );
+
 						if(ispass)
-							bufferTemp.write(nCount + ","+currentBle.device.getAddress() +",Pass"+ System.getProperty("line.separator"));
+							bufferTemp.write(nCount + ","+currentBle.device.getAddress() +",Pass,"+
+									nPercent + "," + strX + "," + strY + "," + strXZ+
+									System.getProperty("line.separator"));
 						else
-							bufferTemp.write(nCount + ","+currentBle.device.getAddress() +",Fail"+ System.getProperty("line.separator"));
+							bufferTemp.write(nCount + ","+currentBle.device.getAddress() +",Fail,"+
+									nPercent + "," + strX + "," + strY + "," + strXZ+
+									System.getProperty("line.separator"));
 					} catch (IOException e) {
 						e.printStackTrace();
+						Toast.makeText(MainActivity.this, "Recorded Failed!", Toast.LENGTH_SHORT).show();
 					}
 				}
 				try {
@@ -531,8 +651,10 @@ public class MainActivity extends AppCompatActivity
 					bufferTemp.close();
 				} catch (IOException e) {
 					e.printStackTrace();
+					Toast.makeText(MainActivity.this, "Recorded Failed!", Toast.LENGTH_SHORT).show();
 				}
 				ftemp.renameTo(freal);
+				Toast.makeText(MainActivity.this, "Successfully Recorded!", Toast.LENGTH_SHORT).show();
 			}
 		});
 	}
@@ -562,7 +684,12 @@ public class MainActivity extends AppCompatActivity
 		}
 	}
 	private void startScanBLE() {
-//		mLeDeviceListAdapter.mLeDevices.clear();
+		if(mLeDeviceListAdapter.mLeDevices.size() > 0) {
+			currentPos = -1;
+			mLeDeviceListAdapter.mLeDevices.clear();
+//			mLeDeviceListAdapter.mLeDevices.add(currentBle);
+			unCheckall();
+		}
 		btnScan.setText("Stop");
 		if (mBluetoothAdapter.isEnabled()) {
 			mBluetoothAdapter.startLeScan(this);
@@ -602,6 +729,17 @@ public class MainActivity extends AppCompatActivity
 			btnScan.setText("Stop");
 			startScanBLE();
 			btnScan.setSelected(true);
+		}
+	}
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+
+		// Checks the orientation of the screen for landscape and portrait and set portrait mode always
+		if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+			setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+		} else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
+			setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 		}
 	}
 
@@ -838,16 +976,19 @@ public class MainActivity extends AppCompatActivity
 		}
 
 		void addDevice(Bledevices dev) {
-			int i;
-			int listSize = mLeDevices.size();
-			for (i = 0; i < listSize; i++) {
-				if (mLeDevices.get(i).device.equals(dev.device)) {
-					break;
+
+			if((dev.device.getName()!=null) && (dev.device.getName().contains("CALM"))) {
+				int i;
+				int listSize = mLeDevices.size();
+				for (i = 0; i < listSize; i++) {
+					if (mLeDevices.get(i).device.equals(dev.device)) {
+						break;
+					}
 				}
-			}
-			if (i >= listSize) {
-				mLeDevices.add(dev);
-				mCheckStates = Arrays.copyOf(mCheckStates, mCheckStates.length + 1);
+				if (i >= listSize) {
+					mLeDevices.add(dev);
+					mCheckStates = Arrays.copyOf(mCheckStates, mCheckStates.length + 1);
+				}
 			}
 		}
 
@@ -882,7 +1023,7 @@ public class MainActivity extends AppCompatActivity
 			} else {
 				viewHolder = (ViewHolder) view.getTag();
 			}
-//			checkBox = (CheckBox) view.findViewById(R.id.rd_select);
+
 			Bledevices bleDevice = mLeDevices.get(i);
 			final String deviceName = bleDevice.device.getName();
 			if (deviceName != null && deviceName.length() > 0) {
@@ -890,16 +1031,6 @@ public class MainActivity extends AppCompatActivity
 			} else {
 				viewHolder.deviceName.setText("Unknow device");
 			}
-//			checkBox.setTag(i);
-//			checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//				@Override
-//				public void onCheckedChanged(CompoundButton vw,
-//											 boolean isChecked) {
-//					mCheckStates[i] = isChecked;
-//					Log.i("Position", "" + i);
-//				}
-//			});
-
 			return view;
 		}
 	}
