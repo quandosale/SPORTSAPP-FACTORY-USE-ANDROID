@@ -3,10 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/ECGProduct.iml" filepath="$PROJECT_DIR$/ECGProduct.iml" />
-      <module fileurl="file://$PROJECT_DIR$/MPChartLib/MPChartLib.iml" filepath="$PROJECT_DIR$/MPChartLib/MPChartLib.iml" />
       <module fileurl="file://$PROJECT_DIR$/SPORTSAPP-FACTORY-USE-ANDROID.iml" filepath="$PROJECT_DIR$/SPORTSAPP-FACTORY-USE-ANDROID.iml" />
       <module fileurl="file://$PROJECT_DIR$/analysis-release/analysis-release.iml" filepath="$PROJECT_DIR$/analysis-release/analysis-release.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/analysis-release/analysis-release.iml" filepath="$PROJECT_DIR$/analysis-release/analysis-release.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
