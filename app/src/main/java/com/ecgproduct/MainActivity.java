@@ -82,9 +82,9 @@ public class MainActivity extends AppCompatActivity
     private LinkedBlockingDeque<Integer> mInputBuf;
     private LinkedBlockingDeque<Integer> mDrawBuf;
     private ListView deviceList;
-    private Button btnScan;
+
+    private Button btnScan, btn_pass, btn_fail, btn_save;
     TextView tx_connect, tx_mac, tx_temper, tx_battery, tx_rssi, tx_acct, tx_sensor;
-    Button btn_pass, btn_fail;
     private ECGChart mECGFlowChart;
 
     private LinearLayout lyt_graph;
@@ -100,14 +100,17 @@ public class MainActivity extends AppCompatActivity
     String filename = "CALM_Report.csv";
     String filedirectory = "Report";
     boolean isSensorDetected = false;
+    boolean isFitMode = false;
+    boolean isFlowMode = false;
+    boolean isSaving = false;
+
     int isECG = -1;
     float accX = 0;
     float accY = 0;
     float accZ = 0;
     int batteryAmount = 0;
-    boolean isFlowMode = false;
     int nPercent = -1;
-    boolean isFitMode = false;
+
 
     private LeDeviceListAdapter mLeDeviceListAdapter;
 
@@ -168,7 +171,6 @@ public class MainActivity extends AppCompatActivity
         mCalmnessAnalysis = new ProcessAnalysis(); // create instance
 
         mCalmnessAnalysis.startCalm(); // start Analysis Algorithm
-        mCalmnessAnalysis.startCSVExport(); // start csv export
     }
 
     private boolean _checkPermission() {
@@ -263,7 +265,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
+        // automatically handle clicks save_on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
@@ -341,7 +343,7 @@ public class MainActivity extends AppCompatActivity
         lyt_graph = (LinearLayout) findViewById(R.id.lyt_graph);
         lyt_graph.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                // Code here executes on main thread after user presses button
+                // Code here executes save_on main thread after user presses button
                 if (doubleGraphClick) {
                     isFitMode = !isFitMode;
                     if (isFitMode) {
@@ -403,10 +405,27 @@ public class MainActivity extends AppCompatActivity
         btnScan = (Button) findViewById(R.id.btn_scan);
         btnScan.setOnClickListener(this);
 
+        btn_save = (Button) findViewById(R.id.btn_save);
+        btn_save.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                // Code here executes save_on main thread after user presses button
+                if (currentBle != null) {
+                    isSaving = !isSaving;
+                    if (isSaving) {
+                        mCalmnessAnalysis.startCSVExport(currentBle.device.getAddress().replace(":","_"));
+                        btn_save.setBackgroundResource(R.drawable.save_on);
+                    } else {
+                        mCalmnessAnalysis.stopCSVExport();
+                        btn_save.setBackgroundResource(R.drawable.save_off);
+                    }
+                }
+            }
+        });
+
         btn_pass = (Button) findViewById(R.id.btn_pass);
         btn_pass.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                // Code here executes on main thread after user presses button
+                // Code here executes save_on main thread after user presses button
                 if (currentBle != null)
                     confirmOperate(true);
             }
@@ -417,7 +436,7 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 if (currentBle != null)
                     confirmOperate(false);
-                // Code here executes on main thread after user presses button
+                // Code here executes save_on main thread after user presses button
             }
         });
 
@@ -800,6 +819,7 @@ public class MainActivity extends AppCompatActivity
         disconnect();
         nPercent = -1;
         if (currentPos != position) {
+
             currentPos = position;
             connectBle(bleDevice);
             currentBle = bleDevice;
@@ -819,6 +839,9 @@ public class MainActivity extends AppCompatActivity
             return;
         }
         mBluetoothGatt.close();
+        isSaving = false;
+        mCalmnessAnalysis.stopCSVExport();
+        btn_save.setBackgroundResource(R.drawable.save_off);
         currentBle = null;
         updateView(-1, false, 0, 0, 0, 0);
     }
@@ -952,9 +975,9 @@ public class MainActivity extends AppCompatActivity
                     // System.out.println("liufafa uuid-->"+uuid.toString());
                     final int charaProp = gattCharacteristic.getProperties();
                     if ((charaProp | BluetoothGattCharacteristic.PROPERTY_READ) > 0) {
-                        // If there is an active notification on a
+                        // If there is an active notification save_on a
                         // characteristic, clear
-                        // it first so it doesn't update the data field on the
+                        // it first so it doesn't update the data field save_on the
                         // user interface.
                         if (mNotifyCharacteristic != null) {
                             // setCharacteristicNotification(mNotifyCharacteristic,

@@ -19,7 +19,7 @@ import java.util.Vector;
 import java.util.concurrent.LinkedBlockingDeque;
 
 /**
- * Created by hero on 6/22/2017.
+ * Created by hero save_on 6/22/2017.
  */
 
 public class ECGChart extends View {

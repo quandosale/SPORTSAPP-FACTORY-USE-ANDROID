@@ -70,6 +70,14 @@
                     custom:graphMode="1"
                     custom:lineColor="#00ff00"
                     custom:arrow="true"/>
+                <Button
+                    android:id="@+id/btn_save"
+                    android:layout_width="70dp"
+                    android:layout_height="30dp"
+                    android:layout_marginRight="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_gravity="right|bottom"
+                    android:background="@drawable/save_off" />
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -77,7 +85,6 @@
                     android:clickable="true"
                     android:focusable="true"
                     android:orientation="vertical">
-
                     <RadioGroup
                         android:id="@+id/rd_group"
                         android:layout_width="match_parent"
@@ -102,6 +109,7 @@
                             android:text="Flow Mode"
                             android:textColor="@color/your_color" />
                     </RadioGroup>
+
                 </LinearLayout>
             </FrameLayout>
             <LinearLayout
