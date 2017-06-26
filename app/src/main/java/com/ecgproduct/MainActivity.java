@@ -530,22 +530,22 @@ public class MainActivity extends AppCompatActivity
             tx_battery.setText("Battery: " + fpercent + " %");
             nPercent = fpercent;
         }
-        if (accX > 2048)
-            accX = 2048 - accX;
-        accX = (float) ((double) accX / 2048 * 2);
-        String strX = String.format("%.03f", accX);
+//        if (accX > 2048)
+//            accX = 2048 - accX;
+//        accX = (float) ((double) accX / 2048 * 2);
+//        String strX = String.format("%.03f", accX);
+//
+//        if (accY > 2048)
+//            accY = 2048 - accY;
+//        accY = (float) ((double) accY / 2048 * 2);
+//        String strY = String.format("%.03f", accY);
+//
+//        if (accZ > 2048)
+//            accZ = 2048 - accZ;
+//        accZ = (float) ((double) accZ / 2048 * 2);
+//        String strXZ = String.format("%.03f", accX);
 
-        if (accY > 2048)
-            accY = 2048 - accY;
-        accY = (float) ((double) accY / 2048 * 2);
-        String strY = String.format("%.03f", accX);
-
-        if (accZ > 2048)
-            accZ = 2048 - accZ;
-        accZ = (float) ((double) accZ / 2048 * 2);
-        String strXZ = String.format("%.03f", accX);
-
-        tx_acct.setText("Acceleration: X:" + strX + " g Y:" + strY + "g Z:" + strXZ + "g");
+        tx_acct.setText("Acceleration: X:" + accX + " g Y:" + accY + "g Z:" + accZ + "g");
 
     }
 
@@ -888,6 +888,7 @@ public class MainActivity extends AppCompatActivity
 
             if (ecgVal >= Math.pow(2, 15))
                 ecgVal = 1250;
+//                continue;
 
             mECGFlowChart.addEcgData(ecgVal);    //mInputBuf.addLast(ecgVal);
             mCalmnessAnalysis.addEcgDataOne((double)((ecgVal-1200)/800f));
@@ -1091,14 +1092,17 @@ public class MainActivity extends AppCompatActivity
                 view = mInflator.inflate(R.layout.item_device, null);
                 viewHolder = new ViewHolder();
                 viewHolder.deviceName = (TextView) view.findViewById(R.id.device_name);
+                viewHolder.deviceAddr = (TextView) view.findViewById(R.id.device_addr);
                 view.setTag(viewHolder);
             } else {
                 viewHolder = (ViewHolder) view.getTag();
             }
             Bledevices bleDevice = mLeDevices.get(i);
             final String deviceName = bleDevice.device.getName();
+            final String deviceAddr = bleDevice.device.getAddress();
             if (deviceName != null && deviceName.length() > 0) {
                 viewHolder.deviceName.setText(deviceName);
+                viewHolder.deviceAddr.setText(deviceAddr);
             } else {
                 viewHolder.deviceName.setText("Unknow device");
             }
@@ -1108,6 +1112,7 @@ public class MainActivity extends AppCompatActivity
 
     private static class ViewHolder {
         TextView deviceName;
+        TextView deviceAddr;
     }
 
     private class Bledevices {

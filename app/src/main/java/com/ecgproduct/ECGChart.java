@@ -175,7 +175,7 @@ public class ECGChart extends View {
 //        if (mGraphMode == FLOW_MODE)
         for (int i = 1; i < mWindowSize; i++) {
             int end = mDrawingBuf.get(i);
-            canvas.drawLine(i * mapRatio, start / mGraphMax * height, (i + 1) * mapRatio, end / mGraphMax * height, mPaint);
+            canvas.drawLine(i * mapRatio, height - start / mGraphMax * height, (i + 1) * mapRatio, height - end / mGraphMax * height, mPaint);
             start = end;
         }
 
@@ -252,7 +252,7 @@ public class ECGChart extends View {
         mPaintArrow.setAntiAlias(true);
         if (mArrow) {
             canvas.drawText("250 ms", pX + 28, pY - 10, mPaintArrow);
-            canvas.drawText("500 mV", pX + 8, pY - dy + 15, mPaintArrow);
+            canvas.drawText("0.5 mV", pX + 8, pY - dy + 15, mPaintArrow);
         }
     }
 
